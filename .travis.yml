@@ -40,7 +40,7 @@ script:
 - mkdir .deploy
 - cd .deploy # create folder for deploy
 - git clone --depth 1 --branch master --single-branch $DEPLOY_REPO . # get the master branch
-- rm -rf ./*
+- rm -rf !(README.md)
 - cp -r ../public/* . # copy generated site over
 - git add -A . # add all the things
 - git commit -m 'Site updated'
