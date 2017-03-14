@@ -1,3 +1,3 @@
 # HoverBaums blog
 
-this is the source for my personal blog.
+This is my personal blog mostly about programming (JS and general) and daily live.
