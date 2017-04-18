@@ -32,12 +32,8 @@ before_script:
 - git config --global user.email 'mail@hendrikwallbaum.de'
 
 script:
-- mkdir .predeploy # make a folder for pre deploy
-- cd .predeploy
-- git clone --depth 1 --branch master --single-branch $SOURCE_REPO . # get the files from the development branch
-- npm install
 - hexo generate #generate site
 
 
 after_success:
-    'find public -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://hoverbaum.net/ ";"'
+    'find public -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://hoverbaum.net/{} ";"'
