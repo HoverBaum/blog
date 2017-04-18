@@ -37,12 +37,7 @@ script:
 - git clone --depth 1 --branch master --single-branch $SOURCE_REPO . # get the files from the development branch
 - npm install
 - hexo generate #generate site
-- mkdir .deploy
-- cd .deploy # create folder for deploy
-- git clone --depth 1 --branch master --single-branch $DEPLOY_REPO . # get the master branch
-- rm -rf !(README.md)
-- cp -r ../public/* . # copy generated site over
-- git add -A . # add all the things
-- git commit -m 'Site updated'
-- git branch -m master
-- git push -q -u origin master # push new version
+
+
+after_success:
+    "curl --ftp-create-dirs -T public/ -u $FTP_USER:$FTP_PASSWORD ftp://hoverbaum.net/"
