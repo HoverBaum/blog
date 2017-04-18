@@ -40,4 +40,4 @@ script:
 
 
 after_success:
-    "find public -type f -exec curl -u $FTP_USER:$FTP_PASSWORD --ftp-create-dirs -T {} ftp://hoverbaum.net/{}"
+    "wput public/* ftp://$FTP_USER:$FTP_PASSWORD@hoverbaum.net/test/ "
