@@ -8,7 +8,7 @@ tags:
   - Automation
 ---
 
-Testing is one of the essential steps in software development. Yet, testing and especially manual testing that clicks through the application is a tedious job that we often shy away from. But it doesn't have to be. With great tooling coming out over the past couple of years we now have what it takes to automate click through testing in our build process. In this post, we will look at why manual or click through tests are important and how to turn this tedious and bothersome task into a fun one that drives our development forward.
+Testing is one of the essential steps in software development. Yet, testing and especially manual testing that clicks through the application is a tedious job that we often shy away from. But it doesn't have to be. With great tooling coming out over the past couple of years we now have what it takes to automate click-through testing in our build process. In this post, we will look at why manual or click-through tests are important and how to turn this tedious and bothersome task into a fun one that drives our development forward.
 
 ![Today we will test websites as real users would.](https://storage.googleapis.com/hoverbaum-blog-assets/puppeteer-testing/jest%2Bpuppeteer.png)
 
@@ -18,27 +18,27 @@ Restless readers can jump straight into the [repo accompanying this post](https:
 
 ## Why we need manual QA
 
-From a developers point of view testing and QA, especially manual QA can seem like an unreasonable burden placed on us to hamper our development velocity. While the developer community as a whole, as well as most management, are slowly coming to their senses and seeing that writing well tested and working code that forms a great product for users is way more valuable than squeezing in one more feature, we still frown on manual QA as a roadblock.
+From a developer point of view; testing and QA, especially manual QA can seem like an unreasonable burden placed on us to hamper our development velocity. While the developer community as a whole, as well as most of the management community, are slowly coming to their senses and seeing that writing well-tested and working code that forms a great product for users is way more valuable than squeezing in one more feature, we still frown on manual QA as a roadblock.
 
 > Manual test runs often turn into roadblocks.
 
 But manual QA really isn't the issue we face. It is the way we use it. Originally manual QA comes from the realization that someone really should click through the finished website to make sure that it really works, before shipping it to customers. You can unit test the hell out of things, users and the real world can always break things. Thus we try our best to emulate real-world scenarios and users using manual QA.
 
-Somewhere in the DevOps movement we realized that shipping small pieces of code and doing so often highly reduces the number of bugs we ship, makes our companies more flexible to react to users needs and market requirements as well as creates a good working environment for ourselves. Too often a big pain point in achieving a high release velocity is manual QA. Because for whatever reason our organizations require a full manual QA run for each release. This temps to stock up on features so that QA can process as much as possible at once (if you read the Phoenix Project, this is our heat treat often). We totally ignore that this is exactly what makes it hard to track down which of the dozens of commits introduced a bug and that by doing so we usually block development for a few days just to make a single release happen. We invent complicated procedures like a week of code freeze to create a "stable testing environment" that in reality it often turns out to be anything but stable.
+Somewhere in the DevOps movement we realized that shipping small pieces of code and doing so often highly reduces the number of bugs we ship, makes our companies more able to react to user needs and market requirements as well as creates a good working environment for ourselves. Too often a big pain point in achieving a high release velocity is manual QA. Because for whatever reason our organizations require a full manual QA run for each release. This tempts us to stock up on features so that QA can process as much as possible at once (if you read the Phoenix Project, this is our heat treat often). We totally ignore that this is exactly what makes it hard to track down which of the dozens of commits introduced a bug and that by doing so we usually block development for a few days just to make a single release happen. We invent complicated procedures like a week of code freeze to create a "stable testing environment" that in reality it often turns out to be anything but stable.
 
-> Programming needs QA as much, as any other industry does.
+> Programming needs QA as much as any other industry does.
 
-Still, we need manual QA just like any other industry does. But it is time to shift the focus. When we look at other disciplines we will always see manual QA, it is simply reassuring to have a human control that everything is going right. They are more flexible and more like the real world users than machines will be for a long while. But do you see quality assurance happen on every single, finished piece leaving traditional production chains? Of cause not, that would be such a waste of time! When we build cars we don't need to check every single one. We take out one every so often to ensure the process runs smoothly and trust that the rest work just the same.
+Still, we need manual QA just like any other industry does. But it is time to shift the focus. When we look at other disciplines we will always see manual QA, it is simply reassuring to have a human control that everything is going right. They are more flexible and more like the real world users than machines will be for a long while. But do you see quality assurance happen on every single, finished piece leaving traditional production chains? Of course not, that would be such a waste of time! When we build cars we don't need to check every single one. We take out one every so often to ensure the process runs smoothly and trust that the rest work just the same.
 
 That is the mode of operation we want to achieve in software development as well. we make a release and we make dozens of them (maybe even per day). Every once in a while someone manually verifies a release and with that, we trust that the rest work just as well as this one did because we have trust in our processes.
 
 ### Building trust
 
-But we don't currently have that trust. Often enough companies are scared by experiences of deployments gone horribly wrong. And as a sad result, they introduce cumbersome procedures meant to catch errors before they happen when in reality these processes cause the opposite and slow the company down. It is on us to rebuild this trust and to alleviate manual QA of the burden, they currently carry. We can achieve this by automating the process QA manually goes through.
+But we don't currently have that trust. Often enough companies are scared by experiences of deployments gone horribly wrong. And as a sad result they introduce cumbersome procedures meant to catch errors before they happen when in reality these processes cause the opposite and slow the company down. It is on us to rebuild this trust and to alleviate manual QA of the burden they currently carry. We can achieve this by automating the process QA manually goes through.
 
-> To go from where we are to where we want to be which is not blocked by manual QA runs and releasing multiple times a day, we need to invest into automated testing as well as into build trust within the organization that our code does what it's supposed to.
+> To go from where we are to where we want to be, which is not blocked by manual QA runs and releasing multiple times a day, we need to invest into automated testing as well as into building the trust within the organization that our code does what it's supposed to.
 
-Today we will take a great step forward on this road by automating a click through test for a website.
+Today we will take a great step forward on this road by automating a click-through test for a website.
 
 ## A simple web application
 
@@ -317,7 +317,7 @@ We will simply check whether or not the environment contains a variable named `S
 
 ### Limitations and good tests
 
-As with every approach, this automated click-through testing isn't omnipotent, it comes with some limitations. For once that Puppeteer basically only runs with Chrome. But as we discussed earlier automated click-through testing shouldn't replace manual QA runs but help them. Once we achieve fast development iterations which will give us fewer bugs, testing in one browser for each build will be just fine, as long as we do periodic checks in all browsers. Always assuming that developers check their code in multiple browsers anyways 😉
+As with every approach, this automated click-through testing isn't omnipotent, it comes with some limitations. For instance that Puppeteer basically only runs with Chrome. But as we discussed earlier automated click-through testing shouldn't replace manual QA runs but help them. Once we achieve fast development iterations which will give us fewer bugs, testing in one browser for each build will be just fine, as long as we do periodic checks in all browsers. Always assuming that developers check their code in multiple browsers anyways 😉
 
 You might find it helpful to introduce timeouts in your tests. You will notice when to use them, as tests will fail when the default timeout isn't long enough simply hand your desired timeout as a second argument to `it()`.
 
