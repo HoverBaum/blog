@@ -1,10 +1,11 @@
 menu:
-
+ Archive: /archives
+ Tags: /tags
+ RSS: /atom.xml
 
 widgets:
-- greeting
-- site_links
-- my_sites
+ - greeting
+ - site_links
 
 rss: /atom.xml
 
