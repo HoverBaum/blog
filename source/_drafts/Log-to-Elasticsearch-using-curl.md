@@ -9,6 +9,10 @@ categories:
 
 Once you get a centralized logging solution like Elasticsearch setup you open up an increadible amount of possibilities. That is, if you actually send logs to your central place. On a recent project we wanted to "just log our deploys from the Jenkins Server". Thus we set out to find the "easiest" way to log to our Elasticsearch. We finally reached curl as our solution and today I will walk you through how to do that.
 
+![Good old tools can do amazing jobs.](https://storage.googleapis.com/hoverbaum-blog-assets/teaser-images/curl-to-elastic.jpg)
+
+<!-- more -->
+
 This post uses Elasticsearch version 7.
 
 ## Console basics
@@ -85,7 +89,7 @@ docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elas
 
 You can post to any `/index/type` to add a new Document to the specific Type of an Index. It you want to get a pretty response, add `?pretty` to the URL.
 
-Say for example you wanted to have an Index that groups Documents related to a deployment of you application. The object you initially want to log might look like:
+Say for example you wanted to have an Index that groups Documents related to a deployments of you application. The object you initially want to log might contain the hash of your code being deployed and thus look like:
 
 ```json
 {
@@ -115,11 +119,79 @@ curl -X GET "localhost:9200/deploys/_search/?pretty" -H 'Content-Type: applicati
   "query": { "match_all": {} }
 }
 '
-
 ```
+
+This will return us all documents within the Index. Check out the [search API](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-search-API.html) for more options.
+
+### Mappings
+
+We breifly touched on Mappings before when we noted that Elasticsearch expects timestamps (or date in general) to be in milliseconds since Epoch. Through Mappings we can add fields to an Index. With this we can controle the *type* that a field will get. While all fields default to "text" it is especially important for our timestamp that we set the field to be of type "date" before adding the first document to our Index. By doing so we ensure that we can later properly filter on our timestamp in Kibana.
+
+Sadly this means we now need to delete our Index again (and any Kibana indexes we might have created to explore our documents before the Elasticsearch Indexes).
+
+```bash
+curl -X DELETE "localhost:9200/deploys"
+```
+
+Now we can add the Index back with the right mapping for our timestamp using:
+
+```bash
+curl -X PUT "localhost:9200/deploys/_mapping" -H 'Content-Type: application/json' -d'
+{
+  "properties": {
+    "timestamp": {
+      "timestamp": "date"
+    }
+  }
+}
+'
+```
+
 
 ## Logging using curl
 
+Now that we have the fundamentals of curl and date down, as well as an understanding of Elasticsearches API, it is finally time to get logging.
+
+We already locked at sending a message containing a timestamp via a POST request. With our knowledge of the Elasticsearch API we can now log an event with a timestamp.
+
 ```bash
-HASH=$(git rev-parse --short HEAD) && NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -H "Content-Type: application/json" -XPOST "http://your.domain:9200/deploys/deploy" -d '{ "gitHash" : "'"${HASH}"'", "date": "'"${NOW}"'", "info": "some infos", "environment": "test"}'
+NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -H "Content-Type: application/json" -X POST "http://your.domain:9200/deploys/_doc_" -d'
+{ 
+  "timestamp": "'"${NOW}"'"
+}
+'
 ```
+
+With the above you should have a solid understanding of what is happening here. Below we will dive into a more complex example with once more an explanation of what is going on.
+
+### A practical example
+
+Above I used an example of logging something containing a git hash related to a deployment. That in fact was my use case to dive into this. Let me present to you my solution to log the currently deployed git hash from our CI Server to Elasticsearch.
+
+```bash
+HASH=$(git rev-parse --short HEAD) && NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -H "Content-Type: application/json" -X POST "http://your.domain:9200/deploys/_doc_" -d '{ "gitHash" : "'"${HASH}"'", "timestamp": "'"${NOW}"'", "info": "some infos", "environment": "test"}'
+```
+
+TODO: Multiline bash for readability
+
+You can probably figure out whats going on here. Let me just go through it to make sure we are on the same page. First we have three commands in total, let's examine them one at a time.
+
+`HASH=$(git rev-parse --short HEAD)` asigns the short hash (first 7 symbols) of the git repository we are currently in to an enviornment variables named *HASH*.
+
+`NOW=$(($(date +'%s * 1000 + %-N / 1000000')))` should look familiar, it gets the current timestamp in milliseconds and assigns it to a variable named *NOW*.
+
+Finally we bring it all toger in one big curl command. Let me just go over the options for this one.
+
+`-H "Content-Type: application/json"` sets a "Content-Type" header with "application/json" so that our Elasticsearch knows that it gets valid json.
+
+`-X POST "http://your.domain:9200/deploys/deploy" ` tells curl to fire a POST request and which endpoint to use.
+
+` -d '{ "gitHash" : "'"${HASH}"'", "timestamp": "'"${NOW}"'", "info": "some infos", "environment": "test"}'` finally defines the json data we are going to send along with our request. Here we use the variables we created to fill in the git hash as well as timestamp. Note that once again we use `"'"` for proper escaping.
+
+## Conclusion
+
+Today we learned a lot about curl, date and Elasticsearch. We not only took a look at how these tools can be use din isolation but also how to use them together to "just quickly log something".
+
+I hope this sets you up to do great things and achieve quick wins empowered by your existing systems.
+
+![](https://storage.googleapis.com/hoverbaum-blog-assets/emojies/emoji-memo.png)
