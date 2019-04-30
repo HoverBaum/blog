@@ -35,7 +35,7 @@ Let us instead focus on understanding curl and relevant options better. First we
 curl -X POST https://jsonplaceholder.typicode.com/posts
 ```
 
-Now we will want to send some data along. For this curl has `-d` to pass data along as well as `-H` to set a header. We want to set a header for the [Content-Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) so that we can tell receivers that we are sending JSON. Try the code below and also try it without the `-H` option to get a feeling for what we get by using it. You will notice that the placeholder API interprest out entire data as a key with no value specified. Setting the right Content-Type helps us to pass the data along in a way that the server can handle.
+Now we will want to send some data along. For this curl has `-d` to pass data along as well as `-H` to set a header. We want to set a header for the [Content-Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) so that we can tell receivers that we are sending JSON. Try the code below and also try it without the `-H` option to get a feeling for what we get by using it. You will notice that the placeholder API interprest out entire data as a key with no value specified. Setting the right Content-Type helps us to pass the data along in a way that the server can handle. You might run into an [issue with ' on Windows](https://stackoverflow.com/a/22883631/2156675).
 
 ```bash
 curl -X POST https://jsonplaceholder.typicode.com/posts -H "Content-Type: application/json" -d '{"title": "My awesome title"}'
@@ -47,16 +47,16 @@ Read more abou the used options in the curl manual [-X](https://curl.haxx.se/doc
 
 One thing that we wanted to add to all our logs are timestamps. Luckily our terminal comes with `date` which can print the current date in many formats. You can refer to the [Ubuntu docs on date](https://manpages.ubuntu.com/manpages/bionic/en/man1/date.1.html) for a documentation on date and this [article on formatting dates](https://www.cyberciti.biz/faq/linux-unix-formatting-dates-for-display/) for some inspiration. Genreally you call `date` with a single parameter that passes in what you want. `date +%s` for example gives you the seconds since Epoch. 
 
-For Elasticsearch however we need [date fields](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html) in milliseconds since Epoch. And our timestamp will be a field of type date so that we can filter by it. To achieve that we will add nanoseconds and then devide by 1000000. (This will probably not work on Macs)
+For Elasticsearch however we need [date fields](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html) in milliseconds since Epoch. And our timestamp will be a field of type date so that we can filter by it. To achieve that we will add nanoseconds and then devide by 1000000. Because `date` behaves a bit differently on different System the command below will simply fill up the specifity between seconds and milliseconds with zeros on system that do not support milliseconds on the date command (looking at you MacOS - [Stackoverflow credit](https://apple.stackexchange.com/a/135743)).
 
 ```bash
-echo $(($(date +%s%N)/1000000))
+echo $(($(date +'%s * 1000 + %-N / 1000000')))
 ```
 
 Now that we have our timestamp we want to use it in our POST request to the server. For that we will save it in an environment varialbe and reference that in our request.
 
 ```bash
-NOW=$(($(date +%s%N)/1000000)) && curl -X POST https://jsonplaceholder.typicode.com/posts -H "Content-Type: application/json" -d '{"timestamp": "'"${NOW}"'"}'
+NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -X POST https://jsonplaceholder.typicode.com/posts -H "Content-Type: application/json" -d '{"timestamp": "'"${NOW}"'"}'
 ```
 
 Let me unpack that for you: first we assign the timestamp to an environment varialbe called *NOW* the we tell our shell to execute another command without loosing context through `&&` here we make our POST request. You would usually expect to now see `${NOW}` wherever you want to insert the environment variables value. But to get our shell to properly escape here we need to wrap our value into wrapped single quotes.
@@ -121,5 +121,5 @@ curl -X GET "localhost:9200/deploys/_search/?pretty" -H 'Content-Type: applicati
 ## Logging using curl
 
 ```bash
-HASH=$(git rev-parse --short HEAD) && NOW=$(($(date +%s%N)/1000000)) && curl -H "Content-Type: application/json" -XPOST "http://your.domain:9200/deploys/deploy" -d '{ "gitHash" : "'"${HASH}"'", "date": "'"${NOW}"'", "info": "some infos", "environment": "test"}'
+HASH=$(git rev-parse --short HEAD) && NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -H "Content-Type: application/json" -XPOST "http://your.domain:9200/deploys/deploy" -d '{ "gitHash" : "'"${HASH}"'", "date": "'"${NOW}"'", "info": "some infos", "environment": "test"}'
 ```
