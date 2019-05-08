@@ -7,7 +7,7 @@ categories:
   - Technical
 ---
 
-Once you get a centralized logging solution like Elasticsearch setup you open up an increadible amount of possibilities. That is, if you actually send logs to your central place. On a recent project we wanted to "just log our deploys from the Jenkins Server". Thus we set out to find the "easiest" way to log to our Elasticsearch. We finally reached curl as our solution and today I will walk you through how to do that.
+Once you get a centralised logging solution like Elasticsearch setup you open up an incredible amount of possibilities. That is, if you actually send logs to your central place. On a recent project we wanted to "just log our deploys from the Jenkins Server". Thus we set out to find the "easiest" way to log to our Elasticsearch. We finally reached curl as our solution and today I will walk you through how to do that.
 
 ![Good old tools can do amazing jobs.](https://storage.googleapis.com/hoverbaum-blog-assets/teaser-images/curl-to-elastic.jpg)
 
@@ -39,19 +39,19 @@ Let us instead focus on understanding curl and relevant options better. First we
 curl -X POST https://jsonplaceholder.typicode.com/posts
 ```
 
-Now we will want to send some data along. For this curl has `-d` to pass data along as well as `-H` to set a header. We want to set a header for the [Content-Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) so that we can tell receivers that we are sending JSON. Try the code below and also try it without the `-H` option to get a feeling for what we get by using it. You will notice that the placeholder API interprest out entire data as a key with no value specified. Setting the right Content-Type helps us to pass the data along in a way that the server can handle. You might run into an [issue with ' on Windows](https://stackoverflow.com/a/22883631/2156675).
+Now we will want to send some data along. For this curl has `-d` to pass data along as well as `-H` to set a header. We want to set a header for the [Content-Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) so that we can tell receivers that we are sending JSON. Try the code below and also try it without the `-H` option to get a feeling for what we get by using it. You will notice that the placeholder API interprets out entire data as a key with no value specified. Setting the right Content-Type helps us to pass the data along in a way that the server can handle. You might run into an [issue with ' on Windows](https://stackoverflow.com/a/22883631/2156675).
 
 ```bash
 curl -X POST https://jsonplaceholder.typicode.com/posts -H "Content-Type: application/json" -d '{"title": "My awesome title"}'
 ```
 
-Read more abou the used options in the curl manual [-X](https://curl.haxx.se/docs/manpage.html#-X), [-H](https://curl.haxx.se/docs/manpage.html#-H) and [-d](https://curl.haxx.se/docs/manpage.html#-d)
+Read more about the used options in the curl manual [-X](https://curl.haxx.se/docs/manpage.html#-X), [-H](https://curl.haxx.se/docs/manpage.html#-H) and [-d](https://curl.haxx.se/docs/manpage.html#-d)
 
 ### Timestamps and Environment variables
 
-One thing that we wanted to add to all our logs are timestamps. Luckily our terminal comes with `date` which can print the current date in many formats. You can refer to the [Ubuntu docs on date](https://manpages.ubuntu.com/manpages/bionic/en/man1/date.1.html) for a documentation on date and this [article on formatting dates](https://www.cyberciti.biz/faq/linux-unix-formatting-dates-for-display/) for some inspiration. Genreally you call `date` with a single parameter that passes in what you want. `date +%s` for example gives you the seconds since Epoch. 
+One thing that we wanted to add to all our logs are timestamps. Luckily our terminal comes with `date` which can print the current date in many formats. You can refer to the [Ubuntu docs on date](https://manpages.ubuntu.com/manpages/bionic/en/man1/date.1.html) for a documentation on date and this [article on formatting dates](https://www.cyberciti.biz/faq/linux-unix-formatting-dates-for-display/) for some inspiration. Generally you call `date` with a single parameter that passes in what you want. `date +%s` for example gives you the seconds since Epoch. 
 
-For Elasticsearch however we need [date fields](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html) in milliseconds since Epoch. And our timestamp will be a field of type date so that we can filter by it. To achieve that we will add nanoseconds and then devide by 1000000. Because `date` behaves a bit differently on different System the command below will simply fill up the specifity between seconds and milliseconds with zeros on system that do not support milliseconds on the date command (looking at you MacOS - [Stackoverflow credit](https://apple.stackexchange.com/a/135743)).
+For Elasticsearch however we need [date fields](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html) in milliseconds since Epoch. And our timestamp will be a field of type date so that we can filter by it. To achieve that we will add nanoseconds and then divide by 1000000. Because `date` behaves a bit differently on different System the command below will simply fill up the specificity between seconds and milliseconds with zeros on system that do not support milliseconds on the date command (looking at you MacOS - [Stackoverflow credit](https://apple.stackexchange.com/a/135743)).
 
 ```bash
 echo $(($(date +'%s * 1000 + %-N / 1000000')))
@@ -63,11 +63,11 @@ Now that we have our timestamp we want to use it in our POST request to the serv
 NOW=$(($(date +'%s * 1000 + %-N / 1000000'))) && curl -X POST https://jsonplaceholder.typicode.com/posts -H "Content-Type: application/json" -d '{"timestamp": "'"${NOW}"'"}'
 ```
 
-Let me unpack that for you: first we assign the timestamp to an environment varialbe called *NOW* the we tell our shell to execute another command without loosing context through `&&` here we make our POST request. You would usually expect to now see `${NOW}` wherever you want to insert the environment variables value. But to get our shell to properly escape here we need to wrap our value into wrapped single quotes.
+Let me unpack that for you: first we assign the timestamp to an environment variable called *NOW* the we tell our shell to execute another command without loosing context through `&&` here we make our POST request. You would usually expect to now see `${NOW}` wherever you want to insert the environment variables value. But to get our shell to properly escape here we need to wrap our value into wrapped single quotes.
 
 A word on Operation System compatibility and escaping JSON values. Windows does not support single quotes `'` in the command so you will have to instead use something like: `"{\"title\": \"My awesome title\"}"`. you can also use that Syntax on Macs and Linux machines but I found the single quote approach nicer to read, even though it imposes the escaping for environment variables. Up to you.
 
-TODO this needs some more explaining on what is happening, also with `$()` Syntax.
+TODO: this needs some more explaining on what is happening, also with `$()` Syntax.
 
 ## Elasticsearch APIs
 
@@ -75,7 +75,7 @@ Elasticsearch provides a great documentation on how to [get started](https://www
 
 ### Indexes and Documents
 
-First let's recap how Elasticsearch organizes data. The basic element in Elasticsearch is called a *Document*. You can think of it as a single event being logged, proccessed and organized through Elasticsearch. They are still organized in Types whic are grouped in Indexes. [Types however have been deprecated](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html#_type) in Elasticsearch 6 (at the time of writing version 7 is current) which currently results in each Index only being allowed a single Type. Indexes on the other hand is a collection of similar documents where you can have as many Indexes as you want. You will need those to insert and query documents.
+First let's recap how Elasticsearch organizes data. The basic element in Elasticsearch is called a *Document*. You can think of it as a single event being logged, processed and organised through Elasticsearch. They are still organised in Types which are grouped in Indexes. [Types however have been deprecated](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-concepts.html#_type) in Elasticsearch 6 (at the time of writing version 7 is current) which currently results in each Index only being allowed a single Type. Indexes on the other hand is a collection of similar documents where you can have as many Indexes as you want. You will need those to insert and query documents.
 
 ### Local Elasticsearch
 
@@ -111,7 +111,7 @@ If you are not running Elasticsearch locally but on a remote server replace `loc
 
 ### Reading Documents
 
-Now we can also get the document we just added by querrying the `/index/_search` endpoint.
+Now we can also get the document we just added by querying the `/index/_search` endpoint.
 
 ```bash
 curl -X GET "localhost:9200/deploys/_search/?pretty" -H 'Content-Type: application/json' -d'
@@ -125,7 +125,7 @@ This will return us all documents within the Index. Check out the [search API](h
 
 ### Mappings
 
-We breifly touched on Mappings before when we noted that Elasticsearch expects timestamps (or date in general) to be in milliseconds since Epoch. Through Mappings we can add fields to an Index. With this we can controle the *type* that a field will get. While all fields default to "text" it is especially important for our timestamp that we set the field to be of type "date" before adding the first document to our Index. By doing so we ensure that we can later properly filter on our timestamp in Kibana.
+We briefly touched on Mappings before when we noted that Elasticsearch expects timestamps (or date in general) to be in milliseconds since Epoch. Through Mappings we can add fields to an Index. With this we can controle the *type* that a field will get. While all fields default to "text" it is especially important for our timestamp that we set the field to be of type "date" before adding the first document to our Index. By doing so we ensure that we can later properly filter on our timestamp in Kibana.
 
 Sadly this means we now need to delete our Index again (and any Kibana indexes we might have created to explore our documents before the Elasticsearch Indexes).
 
@@ -176,11 +176,11 @@ TODO: Multiline bash for readability
 
 You can probably figure out whats going on here. Let me just go through it to make sure we are on the same page. First we have three commands in total, let's examine them one at a time.
 
-`HASH=$(git rev-parse --short HEAD)` asigns the short hash (first 7 symbols) of the git repository we are currently in to an enviornment variables named *HASH*.
+`HASH=$(git rev-parse --short HEAD)` assigns the short hash (first 7 symbols) of the git repository we are currently in to an environment variables named *HASH*.
 
 `NOW=$(($(date +'%s * 1000 + %-N / 1000000')))` should look familiar, it gets the current timestamp in milliseconds and assigns it to a variable named *NOW*.
 
-Finally we bring it all toger in one big curl command. Let me just go over the options for this one.
+Finally we bring it all together in one big curl command. Let me just go over the options for this one.
 
 `-H "Content-Type: application/json"` sets a "Content-Type" header with "application/json" so that our Elasticsearch knows that it gets valid json.
 
@@ -195,3 +195,4 @@ Today we learned a lot about curl, date and Elasticsearch. We not only took a lo
 I hope this sets you up to do great things and achieve quick wins empowered by your existing systems.
 
 ![](https://storage.googleapis.com/hoverbaum-blog-assets/emojies/emoji-memo.png)
+
